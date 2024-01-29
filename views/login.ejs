@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhoU?</title>
+      <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="w-full h-screen flex justify-center items-center bg-gradient-to-br from-red-500 to-purple-600">
+    <div class="flex justify-start flex-col gap-2 w-[30%] max-md:w-[80%] max-sm:w-[90%] bg-white px-6 py-10 rounded-[10px]">
+        <h1 class="text-[30px] font-bold mb-2">Login</h1>
+        <form class="flex justify-start flex-col gap-2" action="/register" method="POST">
+            <input class="border-2 border-black px-[10px] py-[5px] rounded-[5px]" 
+                   type="text" 
+                   placeholder="Username"
+                   name="username">
+            <input class="border-2 border-black px-[10px] py-[5px] rounded-[5px]" 
+                   type="password" 
+                   placeholder="Password"
+                   name="password">
+            <button class="border-2 bg-black px-[10px] py-[5px] text-white rounded-[5px]"  class="submit">Login</button>
+        </form>
+        <h1 class="text-center text-gray-400 my-2"> - OR -</h1>
+        <a class="border-2 px-[10px] py-[5px] text-gray-400 rounded-[5px] text-center font-semibold" href="/register">Create account</a>
+    </div>
+</body>
+</html>
