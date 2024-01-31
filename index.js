@@ -1,10 +1,10 @@
 const express = require('express');
 const session = require('express-session');
-const app = express();
 const dotenv = require('dotenv');
 const bcrypt = require('bcrypt');
+const database = require('./db_config.js');
 
-const users = [];
+const app = express();
 
 dotenv.config();
 app.set('view-engine', 'ejs');
@@ -12,7 +12,8 @@ app.use(express.urlencoded({extended: false}));
 
 app.use(session({
     secret: process.env.SESSION_SECRET,
-    saveUninitialized: false
+    saveUninitialized: true,
+    resave: true
 }));
 
 app.get('/', (req, res) => {
@@ -29,15 +30,37 @@ app.get('/login', (req, res) => {
 
 app.post('/login', (req, res) => {
     const {username, password} = req.body;
-
-    if(username === "Florence" && password === "123"){
-        req.session.authenticated = true;
-        req.session.user = { "username": username, "password": password}
+    
+    if(username && password) {
+        const query = `SELECT * FROM users WHERE username = '${username}' AND password = '${password}'`;
         
-        res.redirect("/home");
-    } else {
-        res.json({message : "Account not found"});
+        database.query(query, (err, result) => {
+            if(err){
+                console.error("Error retrieving user:", err);
+            }
+
+            if(result.length === 0){
+                console.error("Account not found");
+            }
+
+            const user = result[0];
+            try {
+                if(bcrypt.compare(password, user.password)){
+                   req.session.authenticated = true;
+                   req.session.user = {username: user.username, email: user.email, password: user.password};
+                   return res.redirect('/home');
+                }
+                else {
+                   console.log("Password not match");
+                }
+            } catch(error) {
+                console.log("Error comparing password")
+            }
+
+        })
+        
     }
+ 
 });
 
 app.get("/home", (req, res) => {
@@ -65,17 +88,22 @@ app.get('/register', (req, res) => {
 })
 
 app.post('/register', async (req, res) => {
-    const {username, password} = req.body;
+    const {username, password, email} = req.body;
 
     try {
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        users.push({"id": crypto.randomUUID(), 
-        "username": username,
-        "password":  hashedPassword
-        });
-    
-        res.redirect("/login");
+        const hashedPassword = await bcrypt.hash(password);
+        if(username && password && email) { 
+           const query = `INSERT INTO users (username, password, email) VALUES ('${username}', '${hashedPassword}', '${email}')`;
+           database.query(query, (err, result) => {
+            if(err) {
+                console.log("Account already exists", err);
+            }
+            res.redirect("/login");
+           })
+        } 
+        else {
+            console.log("Account not registered successfully");
+        }
     } 
     catch(error) {
         console.log("Error: ", error)
@@ -83,4 +111,4 @@ app.post('/register', async (req, res) => {
     }
 });
 
-app.listen(4040);
+app.listen(4000);
